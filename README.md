@@ -1,7 +1,7 @@
 # budget-binder
 
 [Click Here Deployed Link]() <br>
-![budget-binder]()
+![budget-binder](budget-binder.png)
 
 # Description
 This application will allow users to add expenses and deposit to their budget with or without a connection.
