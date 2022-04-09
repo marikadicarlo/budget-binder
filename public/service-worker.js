@@ -1,23 +1,25 @@
 const FILES_TO_CACHE = [
   "/",
   "/index.html",
-  "/styles.css",
-  "/index.js",
+  "/js/index.js",
+  "/js/idb.js",
   "/manifest.json",
+  "/css/styles.css",
   "/icons/icon-72x72.png",
   "/icons/icon-96x96.png",
   "/icons/icon-128x128.png",
-  '/icons/icon-144x144.png',
-  '/icons/icon-152x152.png',
-  '/icons/icon-192x192.png',
-  '/icons/icon-384x384.png',
-  '/icons/icon-512x512.png'
+  "/icons/icon-144x144.png",
+  "/icons/icon-152x152.png",
+  "/icons/icon-192x192.png",
+  "/icons/icon-384x384.png",
+  "/icons/icon-512x512.png",
 ];
 
 const CACHE_NAME = "static-cache-v2";
 const DATA_CACHE_NAME = "data-cache-v1";
 
-// Install and add service worker
+// TODO: add listener and handler to retrieve static assets from the Cache Storage in the browser
+// install
 self.addEventListener("install", function (evt) {
   evt.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -29,32 +31,32 @@ self.addEventListener("install", function (evt) {
   self.skipWaiting();
 });
 
-// Activate the service worker and remove old data from the cache
 self.addEventListener("activate", function (evt) {
   evt.waitUntil(
-    caches.keys().then((keyList) =>
-      Promise.all(
+    caches.keys().then((keyList) => {
+      return Promise.all(
         keyList.map((key) => {
           if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
             console.log("Removing old cache data", key);
             return caches.delete(key);
           }
         })
-      )
-    )
+      );
+    })
   );
 
   self.clients.claim();
 });
 
-// Enable the service worker to intercept network requests
+// fetch
 self.addEventListener("fetch", function (evt) {
+  // cache successful requests to the API
   if (evt.request.url.includes("/api/")) {
     evt.respondWith(
       caches
         .open(DATA_CACHE_NAME)
-        .then((cache) =>
-          fetch(evt.request)
+        .then((cache) => {
+          return fetch(evt.request)
             .then((response) => {
               // If the response was good, clone it and store it in the cache.
               if (response.status === 200) {
@@ -63,25 +65,21 @@ self.addEventListener("fetch", function (evt) {
 
               return response;
             })
-            .catch((err) =>
+            .catch((err) => {
               // Network request failed, try to get it from the cache.
-              cache.match(evt.request)
-            )
-        )
+              return cache.match(evt.request);
+            });
+        })
         .catch((err) => console.log(err))
     );
 
     return;
   }
 
-  // Allows the page to be accessible offline, shows files from the cache
+  // if the request is not for the API, serve static assets using "offline-first" approach.
   evt.respondWith(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) =>
-        cache
-          .match(evt.request)
-          .then((response) => response || fetch(evt.request))
-      )
+    caches.match(evt.request).then(function (response) {
+      return response || fetch(evt.request);
+    })
   );
 });

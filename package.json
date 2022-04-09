@@ -25,10 +25,13 @@
     "compression": "^1.7.4",
     "express": "^4.17.3",
     "mongoose": "^5.5.15",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "ngx-indexed-db": "^10.0.0",
+    "react-service-worker": "^0.1.1"
   },
   "devDependencies": {
     "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.7.4"
+    "webpack-dev-server": "^4.7.4",
+    "webpack-pwa-manifest": "^4.3.0"
   }
 }
